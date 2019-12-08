@@ -1,3 +1,4 @@
+import sys
 import os
 from time import time
 
@@ -11,6 +12,7 @@ from matplotlib.ticker import NullFormatter
 from scipy import io
 import numpy as np
 
+mode = len(sys.argv)
 
 dataset_folder = "./FCPS"
 
@@ -18,7 +20,6 @@ n_neighbors = 10
 
 subplot_row = 2
 subplot_col = 8
-
 
 def add_subplot(algo_name, subplot_cpt, y, fig, t0, t1, X_transformed):
     ax = fig.add_subplot(subplot_row, subplot_col, subplot_cpt)
@@ -38,7 +39,8 @@ def execute_algo(algo, algo_name, subplot_cpt, y, fig):
 
 
 for myfile in os.listdir(dataset_folder):
-    #if myfile != "Atom.mat": continue
+    if mode >= 2 and myfile != sys.argv[1]+".mat": continue
+    
     print("#####################")
     print("#",myfile)
     print("#####################")
@@ -54,8 +56,8 @@ for myfile in os.listdir(dataset_folder):
     # Plot dataset
     #####################
     fig = plt.figure(figsize=(15, 5))
-    plt.suptitle(myfile[:-4]+" Dataset (%i points and %i classes)"
-                 % (X.shape[0], len(np.unique(y))), fontsize=14)
+    """plt.suptitle(myfile[:-4]+" Dataset (%i points and %i classes)"
+                 % (X.shape[0], len(np.unique(y))), fontsize=14)"""
     if X.shape[1] == 3:
         ax = fig.add_subplot(subplot_row, subplot_col, subplot_cpt, projection='3d')
         ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y.ravel(), cmap=plt.cm.rainbow)
@@ -118,4 +120,62 @@ for myfile in os.listdir(dataset_folder):
     plt.subplots_adjust(left=0.05, right=1.05)
     plt.savefig(myfile[:-4]+".png", format="png")
     plt.savefig(myfile[:-4]+".svg", format="svg")
-    #break
+    
+    if mode >= 2: break
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+"""size=100
+alpha=1
+for myfile in os.listdir(dataset_folder):
+    if mode >= 2 and myfile != sys.argv[1]+".mat": continue
+    
+    print("#####################")
+    print("#",myfile)
+    print("#####################")
+    mat = io.loadmat(dataset_folder+"/"+myfile)
+    X = mat["fea"]
+    y = mat["gnd"]
+    print(X.shape)
+    print(y.shape)
+    
+    #####################
+    # Plot dataset
+    #####################
+    fig = plt.figure(figsize=(10, 10))
+    #plt.suptitle(myfile[:-4]+" Dataset (%i points and %i classes)"
+    #             % (X.shape[0], len(np.unique(y))), fontsize=14)
+    if X.shape[1] == 3:
+        ax = fig.add_subplot(1, 1, 1, projection='3d')
+        ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y.ravel(), cmap=plt.cm.rainbow, s=size, alpha=alpha)
+        ax.view_init(40, -10)        
+        plt.subplots_adjust(left=-0.05, right=1.05, bottom=-0.05, top=1.05)                
+    elif X.shape[1] == 2:
+        ax = fig.add_subplot(1, 1, 1)
+        ax.scatter(X[:, 0], X[:, 1], c=y.ravel(), cmap=plt.cm.rainbow, s=size, alpha=alpha)
+
+    plt.savefig(myfile[:-4]+"2.png", format="png")
+    plt.savefig(myfile[:-4]+"2.svg", format="svg") 
+    
+    
+exit()"""
