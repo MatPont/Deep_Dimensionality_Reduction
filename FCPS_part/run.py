@@ -89,7 +89,7 @@ for myfile in os.listdir(dataset_folder):
     
     
     #####################        
-    # New line
+    # New line in plot
     #####################        
     subplot_cpt += 2
     

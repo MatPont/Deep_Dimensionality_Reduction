@@ -11,7 +11,6 @@ class Autoencoder:
     def __init__(self, hidden_dim=128, architecture=2):
         self.hidden_dim = hidden_dim
         self.architecture = architecture
-        pass
 
     def fit_transform(self, X):
         X = (X - X.min(0))/(X.max(0) - X.min(0))
