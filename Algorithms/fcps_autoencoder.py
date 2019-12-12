@@ -7,31 +7,29 @@ from scipy import io
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter
 
+
 class Autoencoder:
     def __init__(self, hidden_dim=128, architecture=2):
         self.hidden_dim = hidden_dim
         self.architecture = architecture
-
-    def fit_transform(self, X):
-        X = (X - X.min(0))/(X.max(0) - X.min(0))
-        d = X.shape[1]
-
+        self.optimizer = 'adam'
+        self.loss = 'binary_crossentropy'        
+        
+    def make_autoencoder_model(self, d):
+    
         #################################################
         # Hyper-parameters
         #################################################
-        epoch = 300
-        batch_size = 64
-
         encoding_dim = 2
         hidden_dim = self.hidden_dim
         architecture = self.architecture
 
         #activation='elu'
         activation='leaky_relu'
-        optimizer='adam'
+        optimizer=self.optimizer
+        loss=self.loss        
         #optimizer=optimizers.Adam(lr=0.01)
         #loss='mean_squared_error'
-        loss='binary_crossentropy'
         #################################################
 
         out_activation = 'sigmoid' if loss=='binary_crossentropy' else 'linear'
@@ -83,10 +81,34 @@ class Autoencoder:
 
         #   Layer
         decoded = Dense(d, activation=out_activation)(decoded)
-
-
+        
+        
         ####### Make model #######
         autoencoder = Model(input_img, decoded)
+        encoder = Model(input_img, encoded)
+        #decoder = Model(encoded, decoded)
+
+        return autoencoder, encoder, decoded
+
+
+    def fit_transform(self, X):
+    
+        #################################################
+        # Hyper-parameters
+        #################################################
+        epoch = 300
+        batch_size = 64   
+        
+        optimizer=self.optimizer
+        loss=self.loss         
+        #################################################        
+    
+        X = (X - X.min(0))/(X.max(0) - X.min(0))
+        d = X.shape[1]
+
+        autoencoder, encoder, decoded = self.make_autoencoder_model(d)
+
+        ####### Compile model #######
         autoencoder.compile(optimizer=optimizer, loss=loss)
 
         autoencoder.summary()
@@ -98,7 +120,6 @@ class Autoencoder:
                         batch_size=batch_size,
                         shuffle=True, verbose=0)
         
-        encoder = Model(input_img, encoded)
         return encoder.predict(X)
         
         
