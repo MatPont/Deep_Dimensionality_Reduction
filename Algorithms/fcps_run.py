@@ -3,7 +3,7 @@ import os
 from time import time
 
 from sklearn import manifold, decomposition
-from autoencoder import Autoencoder
+from fcps_autoencoder import Autoencoder
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -14,7 +14,7 @@ import numpy as np
 
 mode = len(sys.argv)
 
-dataset_folder = "./FCPS"
+dataset_folder = "../Datasets/FCPS"
 
 n_neighbors = 10
 
