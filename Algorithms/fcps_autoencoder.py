@@ -87,6 +87,8 @@ class Autoencoder:
         autoencoder = Model(input_img, decoded)
         encoder = Model(input_img, encoded)
         #decoder = Model(encoded, decoded)
+        
+        autoencoder.compile(optimizer=optimizer, loss=loss)
 
         return autoencoder, encoder, decoded
 
@@ -108,9 +110,7 @@ class Autoencoder:
 
         autoencoder, encoder, decoded = self.make_autoencoder_model(d)
 
-        ####### Compile model #######
-        autoencoder.compile(optimizer=optimizer, loss=loss)
-
+        ####### Plot model #######
         autoencoder.summary()
 
 

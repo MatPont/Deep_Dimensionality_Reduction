@@ -1,7 +1,7 @@
+from utils import generate_and_save_images
+
 import tensorflow as tf
 from scipy import sparse
-
-from utils import generate_and_save_images
 
 
 mse = tf.keras.losses.MeanSquaredError()
@@ -15,9 +15,16 @@ class AE_LLE():
         self.batch_size = batch_size
         self.ae_lle_optimizer = self.make_ae_lle_optimizer()
 
+    def get_X_encoded(self, X):
+        return self.encoder.predict(X)
+
+    def get_Y_lle(self):
+        return self.lle.get_Y()        
+
     def ae_lle_loss(self, X_encoded, W):
         X_encoded_sparse = sparse.csr_matrix(X_encoded)
         return mse(X_encoded, W.dot(X_encoded_sparse).todense())
+        #return mse(X_encoded, W.todense().dot(X_encoded))
 
     def make_ae_lle_optimizer(self):
         return tf.keras.optimizers.Adam()
@@ -45,14 +52,14 @@ class AE_LLE():
             #print("--- Autoencoder update...")
             self.autoencoder.fit(X, X,
                             epochs=1,
-                            batch_size=batch_size,
+                            batch_size=self.batch_size,
                             shuffle=True, verbose=0)
             results = self.autoencoder.evaluate(X, X, batch_size=self.batch_size, verbose=0)
             print("Autoencoder loss = ", results)
             
             # LLE Training
             #print("--- LLE update...")
-            X_encoded = self.encoder.predict(X_train)
+            X_encoded = self.encoder.predict(X)
             #print(X_encoded.shape)
             self.lle.fit(X_encoded)
             print("LLE loss         = ", self.lle.compute_weight_loss(X_encoded))
@@ -61,7 +68,7 @@ class AE_LLE():
             #print("--- Encoder update...")
             encoder_losses = []
             W = self.lle.get_W()
-            encoder_loss = self.ae_lle_train_step(X_train, W)
+            encoder_loss = self.ae_lle_train_step(X, W)
             print("Encoder loss     = ", encoder_loss.numpy())
 
             """# Batch Encoder Training
@@ -84,4 +91,4 @@ class AE_LLE():
         pass     
 
     def fit_transform(self, X):
-        pass  
+        pass           

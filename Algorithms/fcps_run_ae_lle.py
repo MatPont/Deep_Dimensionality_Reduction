@@ -1,4 +1,4 @@
-from fcps_run import execute_algo
+from fcps_run import execute_algo, add_subplot
 from fcps_autoencoder import Autoencoder
 from lle import LLE
 from ae_lle import AE_LLE
@@ -7,12 +7,18 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score
 from scipy import io
 import numpy as np
+import sys
+import os
+import matplotlib.pyplot as plt
+from sklearn import manifold
+
+from time import time  
 
 
 dataset_folder = "../Datasets/FCPS"
 
 subplot_row = 1
-subplot_col = 6
+subplot_col = 8
 
 
 def run_kMeans(X, y, name):
@@ -34,7 +40,7 @@ if __name__ == "__main__":
         print("#",myfile)
         print("#####################")
         mat = io.loadmat(dataset_folder+"/"+myfile)
-        X = mat["fea"]
+        X = mat["fea"].astype(np.float32)
         y = mat["gnd"]
         print(X.shape)
         print(y.shape)
@@ -65,11 +71,19 @@ if __name__ == "__main__":
         # AE LLE
         #####################
         subplot_cpt += 2 
+        print("AE LLE...")        
+        t0 = time()        
         autoencoder, encoder, decoded = Autoencoder().make_autoencoder_model(X.shape[1])
         lle = LLE(neighbors_update=True, verbose=False)
         ae_lle = AE_LLE(autoencoder, encoder, lle)
-        #ae_lle.fit(X)
-        #X_ae_lle = execute_algo(TODO, X, "AE LLE", subplot_cpt, y, fig)
+        ae_lle.fit(X)        
+        X_ae_lle_X_encoded = ae_lle.get_X_encoded(X)
+        X_ae_lle_Y_lle, _ = ae_lle.get_Y_lle()
+        t1 = time()
+        print("AE LLE : %.2g sec" % (t1 - t0))
+        add_subplot("AE LLE (X encoded)", subplot_cpt, y, fig, t0, t1, X_ae_lle_X_encoded)
+        subplot_cpt += 2
+        add_subplot("AE LLE (Y lle)", subplot_cpt, y, fig, t0, t1, X_ae_lle_Y_lle)
 
 
         #####################    
@@ -85,7 +99,10 @@ if __name__ == "__main__":
         run_kMeans(X_ae, y, "AE")
         
         # kMeans on AE LLE
-        run_kMeans(X_ae_lle, y, "AE LLE")
+        run_kMeans(X_ae_lle_X_encoded, y, "AE LLE (X encoded)")
+
+        # kMeans on AE LLE
+        run_kMeans(X_ae_lle_Y_lle, y, "AE LLE (Y lle)")
         
         
         #####################      

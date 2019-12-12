@@ -117,7 +117,6 @@ if __name__ == "__main__":
         subplot_cpt += 2  
         execute_algo(manifold.Isomap, X, "Isomap", subplot_cpt, y, fig)    
             
-        print("ehuyger")
         # Final plot
         #plt.show()
         plt.subplots_adjust(left=0.05, right=1.05)
