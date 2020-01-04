@@ -88,7 +88,7 @@ plot_res_both <- function(path, old_path, dataset, l_reg=NULL){
 path <- "../Results/FCPS_AE_LLE/"
 old_path <- "../Results/FCPS_AE_LLE/old2/"
 l_reg <- NULL
-dataset <- "Tetra"
+dataset <- "EngyTime"
 
 plot_res_both(path, old_path, dataset, l_reg=l_reg)
 
