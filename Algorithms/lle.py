@@ -1,14 +1,15 @@
 from time import time
 import numpy as np
 from scipy import sparse
-from scipy.linalg import solve, eigh
+from scipy.linalg import solve, eigh, lstsq
 from sklearn.neighbors import NearestNeighbors
 from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.utils import check_random_state
 from scipy.sparse.linalg import eigsh
 
 
-
+# More or less the same class as LocallyLinearEmbedding from sklearn
+# but here we can access to the Weight matrix and some other features
 class LLE():
     def __init__(self, n_neighbors=5, n_components=2, n_jobs=None, verbose=True, 
                  learning_rate=0.0001, neighbors_update=False, method="direct",
@@ -49,6 +50,12 @@ class LLE():
         M = M.T.dot(M)
         return M
 
+    def get_WX(self, X, to_fit=True):
+        self.fit(X)
+        W = self.get_W()
+        X_csr = sparse.csr_matrix(X)
+        return W.dot(X_csr)
+
     # From sklearn's "null_space" function
     # https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/manifold/_locally_linear.py
     def get_Y(self, k_skip=1, eigen_solver='arpack', tol=1E-6, max_iter=100,
@@ -70,14 +77,11 @@ class LLE():
                                                     tol=tol, maxiter=max_iter,
                                                     v0=v0)
             except RuntimeError as msg:
-                raise ValueError("Error in determining null-space with ARPACK. "
-                                  "Error message: '%s'. "
-                                  "Note that method='arpack' can fail when the "
-                                  "weight matrix is singular or otherwise "
-                                  "ill-behaved.  method='dense' is recommended. "
-                                  "See online documentation for more information."
-                                  % msg)
-
+                print("arpack solver exception:")
+                print(msg)
+                print("dense solver will be used.")
+                return self.get_Y(k_skip=k_skip, eigen_solver="dense", tol=tol, max_iter=max_iter)
+                
             return eigen_vectors[:, k_skip:], np.sum(eigen_values[k_skip:])
         elif eigen_solver == 'dense':
             if hasattr(M, 'toarray'):
@@ -92,7 +96,7 @@ class LLE():
     def compute_weight_loss(self, X):
         W = self.get_W()
         X_csr = sparse.csr_matrix(X)
-        #return np.square(X - np.dot(W.todense(), X)).sum()
+        #return np.square(X - np.dot(W.todense(), X)).sum() # Too computationnaly expensive to work on dense matrices
         return (X_csr - W.dot(X_csr)).power(2).sum()
 
     def _one_fit(self, X):
@@ -126,7 +130,13 @@ class LLE():
                 else:
                     R = self.reg
                 G.flat[::Z.shape[1] + 1] += R
-                w = solve(G, ones, sym_pos=True)
+                try:
+                  w = solve(G, ones, sym_pos=True)
+                except Exception as msg:
+                  print("solve exception:")
+                  print(msg)
+                  print("lstsq solver will be used.")
+                  w = lstsq(G, ones)[0]
                 self.B[i, :] = w / np.sum(w)
 
 
@@ -171,4 +181,3 @@ class LLE():
     def fit_transform(self, X):
         self.fit(X)
         return self.transform(X)
-
